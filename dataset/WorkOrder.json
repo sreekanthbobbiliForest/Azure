@@ -1,0 +1,67 @@
+{
+	"name": "WorkOrder",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureSqlDatabase1",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "JOBID",
+				"type": "nvarchar"
+			},
+			{
+				"name": "InventTransId",
+				"type": "varchar"
+			},
+			{
+				"name": "LinePosition",
+				"type": "varchar"
+			},
+			{
+				"name": "LineType",
+				"type": "varchar"
+			},
+			{
+				"name": "LineItemNumber",
+				"type": "varchar"
+			},
+			{
+				"name": "LineItemName",
+				"type": "varchar"
+			},
+			{
+				"name": "LineQuantity",
+				"type": "real",
+				"precision": 7
+			},
+			{
+				"name": "LineUOM",
+				"type": "varchar"
+			},
+			{
+				"name": "LineCompoundSequence",
+				"type": "varchar"
+			},
+			{
+				"name": "LineValveSequence",
+				"type": "nvarchar"
+			},
+			{
+				"name": "LineProductType",
+				"type": "varchar"
+			},
+			{
+				"name": "LineHazardCode",
+				"type": "varchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "D365SQL_WorksOrder"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

@@ -1,0 +1,21 @@
+{
+	"name": "sqlserveronprime",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "SqlServer",
+		"typeProperties": {
+			"server": "DESKTOP-CMVG7AA",
+			"database": "AdventureWorks2012",
+			"encrypt": "optional",
+			"trustServerCertificate": false,
+			"authenticationType": "SQL",
+			"userName": "sreekanth",
+			"encryptedCredential": "eyJDcmVkZW50aWFsSWQiOiJlNDU0YzIzNC03NmM2LTQ0ZWMtOTU1NC03YTdmNzBmYzMzM2MiLCJWZXJzaW9uIjoiMi4wIiwiQ2xhc3NUeXBlIjoiTWljcm9zb2Z0LkRhdGFQcm94eS5Db3JlLkludGVyU2VydmljZURhdGFDb250cmFjdC5DcmVkZW50aWFsU1UwNkNZMTQifQ=="
+		},
+		"connectVia": {
+			"referenceName": "onprimeintegration",
+			"type": "IntegrationRuntimeReference"
+		}
+	}
+}

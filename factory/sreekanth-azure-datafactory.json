@@ -1,0 +1,9 @@
+{
+	"name": "sreekanth-azure-datafactory",
+	"location": "centralindia",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "2ce385d0-e3f4-4c56-80ea-06008de99bf0",
+		"tenantId": "4717d2e0-8ed3-4dbd-becc-62ead58e216a"
+	}
+}

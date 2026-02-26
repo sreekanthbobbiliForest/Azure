@@ -1,0 +1,9 @@
+{
+	"name": "onprimeintegration",
+	"properties": {
+		"type": "SelfHosted",
+		"typeProperties": {
+			"selfContainedInteractiveAuthoringEnabled": true
+		}
+	}
+}

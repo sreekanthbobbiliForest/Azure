@@ -1,0 +1,206 @@
+{
+	"name": "WorkOrderDetails",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "cplsourcedataflow",
+						"type": "DatasetReference"
+					},
+					"name": "WorkOrderSource"
+				},
+				{
+					"dataset": {
+						"referenceName": "AzureSqlTable1",
+						"type": "DatasetReference"
+					},
+					"name": "DestinationSource"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "WorkOrder",
+						"type": "DatasetReference"
+					},
+					"name": "WorkOrdersDestinations"
+				}
+			],
+			"transformations": [
+				{
+					"name": "SelectRequColumns"
+				},
+				{
+					"name": "LineProductType",
+					"description": "Add Column LineProductType which is having same data as LineType"
+				},
+				{
+					"name": "JoinBothTablestoVerify"
+				},
+				{
+					"name": "ComponentCount"
+				},
+				{
+					"name": "CheckComponentCount",
+					"description": "JOB Wise no of components to be inserted"
+				},
+				{
+					"name": "ComponentCountdisp"
+				},
+				{
+					"name": "GetDataFromSelectCoulmns"
+				},
+				{
+					"name": "select2"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          PRODID as string,",
+				"          RECIDECORESDISTINCTPRODUCT as long,",
+				"          PRODBOMRECID as long,",
+				"          ECORESDISTINCTPRODUCTVARIANTRECID as long,",
+				"          BOMID as string,",
+				"          BOMIDPRODBOM as string,",
+				"          BOMUNITID as string,",
+				"          COMPONENTCOUNT as short,",
+				"          COUNTRYREGIONID as string,",
+				"          CREATEDBYPRODTABLE as string,",
+				"          CREATEDDATETIMEPRODTABLE as timestamp,",
+				"          DATAAREAIDPRODTABLE as string,",
+				"          DLVDATE as timestamp,",
+				"          EXPORT as boolean,",
+				"          FORMULATIONOUTPUTMESSAGE as boolean,",
+				"          FORMULATIONOUTPUTMESSAGEORIG as boolean,",
+				"          HAZARDCLASS as string,",
+				"          HAZARDDETAIL as string,",
+				"          HAZARDDETAILTYPE as string,",
+				"          HAZARDID as string,",
+				"          HAZARDSEQUENCE as boolean,",
+				"          INVENTHAZARDCODE as string,",
+				"          INVENTREFID as string,",
+				"          INVENTREFTRANSID as string,",
+				"          INVENTTRANSID as string,",
+				"          ITEMID as string,",
+				"          ITEMIDINVENTHAZARDDETAILS as string,",
+				"          ITEMIDINVENTTABLE as string,",
+				"          ITEMIDINVENTTABLEBOM as string,",
+				"          ITEMIDPRODBOM as string,",
+				"          LANGUAGEID as string,",
+				"          LATESTSCHEDDATE as timestamp,",
+				"          MODIFIEDBYPRODTABLE as string,",
+				"          NAME as string,",
+				"          NAMEECORESPRODUCTTRANSLATION as string,",
+				"          PMFPRODUCTTYPE as string,",
+				"          PMFYIELDPCT as double,",
+				"          POSITION as short,",
+				"          PRODCOMPOUNDINGSEQUENCE as string,",
+				"          PRODIDPRODBOM as string,",
+				"          PRODLINETYPE as string,",
+				"          PRODSTATUS as string,",
+				"          PRODUCT as long,",
+				"          PRODUCTECORESPRODUCTTRANSLATION as long,",
+				"          PRODVALVESEQUENCE as string,",
+				"          QTYBOMCALC as double,",
+				"          QTYSCHED as double,",
+				"          RELEASEDDATE as timestamp,",
+				"          SCHEDSTART as timestamp,",
+				"          UNITID as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> WorkOrderSource",
+				"source(output(",
+				"          jobid as string,",
+				"          componentCount as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'select jobid, componentCount from D365SQL_WorksOrderHEADER where TransferStatus=\\'New\\'',",
+				"     format: 'query') ~> DestinationSource",
+				"WorkOrderSource select(mapColumn(",
+				"          JOBID = PRODID,",
+				"          LineHazardCode = HAZARDDETAIL,",
+				"          InventTransId = INVENTTRANSID,",
+				"          LineItemNumber = ITEMIDPRODBOM,",
+				"          LineItemName = NAMEECORESPRODUCTTRANSLATION,",
+				"          LinePosition = POSITION,",
+				"          LineCompoundSequence = PRODCOMPOUNDINGSEQUENCE,",
+				"          LineType = PRODLINETYPE,",
+				"          LineQuantity = QTYBOMCALC,",
+				"          LineUOM = UNITID,",
+				"          LineValveSequence = PRODVALVESEQUENCE",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> SelectRequColumns",
+				"SelectRequColumns derive(LineProductType = LineType) ~> LineProductType",
+				"LineProductType, DestinationSource join(SelectRequColumns@JOBID == DestinationSource@jobid,",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> JoinBothTablestoVerify",
+				"JoinBothTablestoVerify aggregate(groupBy(SelectRequColumns@JOBID),",
+				"     ChildCount = count(1)) ~> ComponentCount",
+				"ComponentCount, DestinationSource join(ComponentCount@JOBID == DestinationSource@jobid,",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> CheckComponentCount",
+				"CheckComponentCount filter(ChildCount==componentCount,",
+				"     partitionBy('roundRobin', 2)) ~> ComponentCountdisp",
+				"select2, JoinBothTablestoVerify join(CompJOBID == SelectRequColumns@JOBID,",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'right')~> GetDataFromSelectCoulmns",
+				"ComponentCountdisp select(mapColumn(",
+				"          CompJOBID = ComponentCount@JOBID,",
+				"          ChildCount",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select2",
+				"GetDataFromSelectCoulmns sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          JOBID as string,",
+				"          InventTransId as string,",
+				"          LinePosition as string,",
+				"          LineType as string,",
+				"          LineItemNumber as string,",
+				"          LineItemName as string,",
+				"          LineQuantity as float,",
+				"          LineUOM as string,",
+				"          LineCompoundSequence as string,",
+				"          LineValveSequence as string,",
+				"          LineProductType as string,",
+				"          LineHazardCode as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          JOBID = CompJOBID,",
+				"          InventTransId,",
+				"          LinePosition,",
+				"          LineType,",
+				"          LineItemNumber,",
+				"          LineItemName,",
+				"          LineQuantity,",
+				"          LineUOM,",
+				"          LineCompoundSequence,",
+				"          LineValveSequence,",
+				"          LineProductType,",
+				"          LineHazardCode",
+				"     )) ~> WorkOrdersDestinations"
+			]
+		}
+	}
+}

@@ -1,0 +1,108 @@
+{
+	"name": "CopySingleFilecsv",
+	"properties": {
+		"activities": [
+			{
+				"name": "EmployeeCSV",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": false,
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "DelimitedTextSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "DelimitedTextWriteSettings",
+							"quoteAllText": true,
+							"fileExtension": ".txt"
+						}
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "SingleFileSource",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "SingleFileDestination",
+						"type": "DatasetReference"
+					}
+				]
+			},
+			{
+				"name": "Delete1",
+				"type": "Delete",
+				"dependsOn": [
+					{
+						"activity": "EmployeeCSV",
+						"dependencyConditions": [
+							"Succeeded",
+							"Completed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "SingleFileSource",
+						"type": "DatasetReference"
+					},
+					"logStorageSettings": {
+						"linkedServiceName": {
+							"referenceName": "SreekanthAzureDataLakeStorage",
+							"type": "LinkedServiceReference"
+						},
+						"path": "destination"
+					},
+					"enableLogging": true,
+					"storeSettings": {
+						"type": "AzureBlobFSReadSettings",
+						"recursive": false,
+						"enablePartitionDiscovery": false
+					}
+				}
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2026-02-21T06:05:45Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

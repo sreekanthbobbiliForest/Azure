@@ -1,0 +1,98 @@
+{
+	"name": "MSSQLServerCPLBMS",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "CPL_BMS",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "SqlServerTable",
+		"schema": [
+			{
+				"name": "JOBID",
+				"type": "nvarchar"
+			},
+			{
+				"name": "STATUS",
+				"type": "nvarchar"
+			},
+			{
+				"name": "CREATEDDATETIME",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "Company",
+				"type": "varchar"
+			},
+			{
+				"name": "WorksOrder",
+				"type": "varchar"
+			},
+			{
+				"name": "ReleasedBy",
+				"type": "varchar"
+			},
+			{
+				"name": "ItemNumber",
+				"type": "varchar"
+			},
+			{
+				"name": "ItemDescription",
+				"type": "varchar"
+			},
+			{
+				"name": "QuantityOrdered",
+				"type": "real",
+				"precision": 7
+			},
+			{
+				"name": "UOM",
+				"type": "varchar"
+			},
+			{
+				"name": "Yield",
+				"type": "decimal",
+				"precision": 18,
+				"scale": 5
+			},
+			{
+				"name": "DeliveryDate",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "StartDate",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "HazardCode",
+				"type": "varchar"
+			},
+			{
+				"name": "ComponentCount",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "CreatedDate",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "TransferStatus",
+				"type": "varchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "D365SQL_WorksOrderHEADER"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

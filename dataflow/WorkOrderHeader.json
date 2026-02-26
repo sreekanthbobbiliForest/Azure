@@ -1,0 +1,162 @@
+{
+	"name": "WorkOrderHeader",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "cplsourcedataflow",
+						"type": "DatasetReference"
+					},
+					"name": "sourceFile"
+				},
+				{
+					"dataset": {
+						"referenceName": "AzureSqlTable1",
+						"type": "DatasetReference"
+					},
+					"name": "sourceDestinationVerification"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "AzureSqlTable1",
+						"type": "DatasetReference"
+					},
+					"name": "DestinationWorksOrder",
+					"description": "Export WorkOrderHeader to Destination Table"
+				}
+			],
+			"transformations": [
+				{
+					"name": "PartitionCreateNewColumn"
+				},
+				{
+					"name": "RemoveDuplicates"
+				},
+				{
+					"name": "AddNewColumns"
+				},
+				{
+					"name": "JoinDestinationTable",
+					"description": "Join DestinationTable to Remove Existing data from source"
+				},
+				{
+					"name": "RemoveExcistingJOBIDs",
+					"description": "Filter JOB ID which are present in Destination Table"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          PRODID as string,",
+				"          RECIDECORESDISTINCTPRODUCT as long,",
+				"          PRODBOMRECID as long,",
+				"          ECORESDISTINCTPRODUCTVARIANTRECID as long,",
+				"          BOMID as string,",
+				"          BOMIDPRODBOM as string,",
+				"          BOMUNITID as string,",
+				"          COMPONENTCOUNT as short,",
+				"          COUNTRYREGIONID as string,",
+				"          CREATEDBYPRODTABLE as string,",
+				"          CREATEDDATETIMEPRODTABLE as timestamp,",
+				"          DATAAREAIDPRODTABLE as string,",
+				"          DLVDATE as timestamp,",
+				"          EXPORT as boolean,",
+				"          FORMULATIONOUTPUTMESSAGE as boolean,",
+				"          FORMULATIONOUTPUTMESSAGEORIG as boolean,",
+				"          HAZARDCLASS as string,",
+				"          HAZARDDETAIL as string,",
+				"          HAZARDDETAILTYPE as string,",
+				"          HAZARDID as string,",
+				"          HAZARDSEQUENCE as boolean,",
+				"          INVENTHAZARDCODE as string,",
+				"          INVENTREFID as string,",
+				"          INVENTREFTRANSID as string,",
+				"          INVENTTRANSID as string,",
+				"          ITEMID as string,",
+				"          ITEMIDINVENTHAZARDDETAILS as string,",
+				"          ITEMIDINVENTTABLE as string,",
+				"          ITEMIDINVENTTABLEBOM as string,",
+				"          ITEMIDPRODBOM as string,",
+				"          LANGUAGEID as string,",
+				"          LATESTSCHEDDATE as timestamp,",
+				"          MODIFIEDBYPRODTABLE as string,",
+				"          NAME as string,",
+				"          NAMEECORESPRODUCTTRANSLATION as string,",
+				"          PMFPRODUCTTYPE as string,",
+				"          PMFYIELDPCT as double,",
+				"          POSITION as short,",
+				"          PRODCOMPOUNDINGSEQUENCE as string,",
+				"          PRODIDPRODBOM as string,",
+				"          PRODLINETYPE as string,",
+				"          PRODSTATUS as string,",
+				"          PRODUCT as long,",
+				"          PRODUCTECORESPRODUCTTRANSLATION as long,",
+				"          PRODVALVESEQUENCE as string,",
+				"          QTYBOMCALC as double,",
+				"          QTYSCHED as double,",
+				"          RELEASEDDATE as timestamp,",
+				"          SCHEDSTART as timestamp,",
+				"          UNITID as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> sourceFile",
+				"source(output(",
+				"          JOBID as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'select JOBID from dbo.D365SQL_WorksOrderHEADER',",
+				"     format: 'query') ~> sourceDestinationVerification",
+				"sourceFile window(over(PRODID),",
+				"     desc(CREATEDBYPRODTABLE, true),",
+				"     rn = rowNumber()) ~> PartitionCreateNewColumn",
+				"PartitionCreateNewColumn filter(rn==1) ~> RemoveDuplicates",
+				"RemoveDuplicates derive(STATUS = \"Added\",",
+				"          TransferStatus = \"New\",",
+				"          DATAAREAIDPRODTABLE = upper(DATAAREAIDPRODTABLE),",
+				"          CreatedDate = currentUTC()) ~> AddNewColumns",
+				"AddNewColumns, sourceDestinationVerification join(PRODID == JOBID,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> JoinDestinationTable",
+				"JoinDestinationTable filter(isNull(JOBID)) ~> RemoveExcistingJOBIDs",
+				"RemoveExcistingJOBIDs sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          JOBID = PRODID,",
+				"          STATUS,",
+				"          Company = DATAAREAIDPRODTABLE,",
+				"          CREATEDDATETIME = CREATEDDATETIMEPRODTABLE,",
+				"          WorksOrder = PRODID,",
+				"          ReleasedBy = CREATEDBYPRODTABLE,",
+				"          ItemNumber = ITEMID,",
+				"          ItemDescription = NAME,",
+				"          QuantityOrdered = QTYSCHED,",
+				"          UOM = UNITID,",
+				"          Yield = PMFYIELDPCT,",
+				"          DeliveryDate = DLVDATE,",
+				"          StartDate = SCHEDSTART,",
+				"          HazardCode = HAZARDDETAIL,",
+				"          ComponentCount = COMPONENTCOUNT,",
+				"          CreatedDate,",
+				"          TransferStatus",
+				"     ),",
+				"     partitionBy('hash', 2,",
+				"          JOBID",
+				"     )) ~> DestinationWorksOrder"
+			]
+		}
+	}
+}

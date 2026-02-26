@@ -1,0 +1,246 @@
+{
+	"name": "FilterDataLatestOneExample",
+	"properties": {
+		"activities": [
+			{
+				"name": "ForEach1",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "GetFileName",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('GetFileName').output.childItems",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "Get Metadata1",
+							"type": "GetMetadata",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"dataset": {
+									"referenceName": "DelimitedText2",
+									"type": "DatasetReference",
+									"parameters": {
+										"FileName": {
+											"value": "@item().name",
+											"type": "Expression"
+										}
+									}
+								},
+								"fieldList": [
+									"lastModified",
+									"itemName"
+								],
+								"storeSettings": {
+									"type": "AzureBlobFSReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							}
+						},
+						{
+							"name": "If Condition1",
+							"type": "IfCondition",
+							"dependsOn": [
+								{
+									"activity": "Get Metadata1",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"expression": {
+									"value": "@greater(activity('Get Metadata1').output.lastModified,variables('ReferenceDateTime'))",
+									"type": "Expression"
+								},
+								"ifTrueActivities": [
+									{
+										"name": "Set variable1",
+										"type": "SetVariable",
+										"dependsOn": [],
+										"policy": {
+											"secureOutput": false,
+											"secureInput": false
+										},
+										"userProperties": [],
+										"typeProperties": {
+											"variableName": "ReferenceDateTime",
+											"value": {
+												"value": "@activity('Get Metadata1').output.lastModified",
+												"type": "Expression"
+											}
+										}
+									},
+									{
+										"name": "Set variable2",
+										"type": "SetVariable",
+										"dependsOn": [
+											{
+												"activity": "Set variable1",
+												"dependencyConditions": [
+													"Succeeded"
+												]
+											}
+										],
+										"policy": {
+											"secureOutput": false,
+											"secureInput": false
+										},
+										"userProperties": [],
+										"typeProperties": {
+											"variableName": "LatestFile",
+											"value": {
+												"value": "@activity('Get Metadata1').output.itemName",
+												"type": "Expression"
+											}
+										}
+									}
+								]
+							}
+						}
+					]
+				}
+			},
+			{
+				"name": "GetFileName",
+				"type": "GetMetadata",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "DelimitedText1",
+						"type": "DatasetReference"
+					},
+					"fieldList": [
+						"childItems"
+					],
+					"storeSettings": {
+						"type": "AzureBlobFSReadSettings",
+						"recursive": true,
+						"enablePartitionDiscovery": false
+					},
+					"formatSettings": {
+						"type": "DelimitedTextReadSettings"
+					}
+				}
+			},
+			{
+				"name": "Copy data1",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "ForEach1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": true,
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "DelimitedTextSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "DelimitedTextWriteSettings",
+							"quoteAllText": true,
+							"fileExtension": ".txt"
+						}
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "DelimitedText2",
+						"type": "DatasetReference",
+						"parameters": {
+							"FileName": {
+								"value": "@variables('LatestFile')",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DelimitedText3",
+						"type": "DatasetReference",
+						"parameters": {
+							"FileName": {
+								"value": "@variables('LatestFile')",
+								"type": "Expression"
+							}
+						}
+					}
+				]
+			}
+		],
+		"variables": {
+			"LatestFile": {
+				"type": "String"
+			},
+			"ReferenceDateTime": {
+				"type": "String",
+				"defaultValue": "1900-01-01 00:00:000"
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2026-02-21T03:32:20Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

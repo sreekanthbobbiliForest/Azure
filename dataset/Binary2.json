@@ -1,0 +1,19 @@
+{
+	"name": "Binary2",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "SreekanthAzureDataLakeStorage",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Binary",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": "workorders",
+				"fileSystem": "cplarchived"
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

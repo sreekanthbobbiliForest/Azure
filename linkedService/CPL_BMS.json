@@ -1,0 +1,21 @@
+{
+	"name": "CPL_BMS",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "SqlServer",
+		"typeProperties": {
+			"server": "DESKTOP-CMVG7AA",
+			"database": "CPL_BMS",
+			"encrypt": "optional",
+			"trustServerCertificate": false,
+			"authenticationType": "SQL",
+			"userName": "sreekanth",
+			"encryptedCredential": "eyJDcmVkZW50aWFsSWQiOiIzYzhjYzVmYi1hNDVmLTQxMDMtODQzZC0yNWZjZTA4ZTc2NTIiLCJWZXJzaW9uIjoiMi4wIiwiQ2xhc3NUeXBlIjoiTWljcm9zb2Z0LkRhdGFQcm94eS5Db3JlLkludGVyU2VydmljZURhdGFDb250cmFjdC5DcmVkZW50aWFsU1UwNkNZMTQifQ=="
+		},
+		"connectVia": {
+			"referenceName": "onprimeintegration",
+			"type": "IntegrationRuntimeReference"
+		}
+	}
+}

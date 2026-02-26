@@ -1,0 +1,17 @@
+{
+	"name": "WorkOrder",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Stopped",
+		"pipelines": [],
+		"type": "BlobEventsTrigger",
+		"typeProperties": {
+			"blobPathBeginsWith": "/cplsource/blobs/",
+			"ignoreEmptyBlobs": true,
+			"scope": "/subscriptions/71533af5-2331-4e1f-b4a8-51961227053f/resourceGroups/sreekanth_azure_databricks/providers/Microsoft.Storage/storageAccounts/sreekanthdbstorage",
+			"events": [
+				"Microsoft.Storage.BlobCreated"
+			]
+		}
+	}
+}
